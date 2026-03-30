@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Flight Publish Monitor</title>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyT7XG5BRsKVp5CXJqqMLqHpyYRrWPqBPBoFPpMh4HG3R2Qd8Hxy8NyUKSeID64VPVohQ/exec";
+
+    let lastMessage = "";
+
+    async function checkFlights() {
+      const response = await fetch(API_URL);
+      const flights = await response.json();
+
+      if (!flights.length) return;
+
+      const message = flights.join(", ");
+      if (message === lastMessage) return;
+      lastMessage = message;
+
+      new Notification("⚠️ Flights Overdue for Publishing", {
+        body: message
+      });
+    }
+
+    async function init() {
+      if (!("Notification" in window)) {
+        alert("Browser notifications are not supported.");
+        return;
+      }
+
+      if (Notification.permission !== "granted") {
+        await Notification.requestPermission();
+      }
+
+      setInterval(checkFlights, 60000);
+      checkFlights();
+    }
+
+    window.onload = init;
+  </script>
+</head>
+
+<body>
+  <h2>✅ Flight Publish Monitor Running</h2>
+  <p>Keep this tab open during duty.</p>
+</body>
+</html>
